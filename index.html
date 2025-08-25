@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currency Converter Pro</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="grad"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1)"/><stop offset="100%" style="stop-color:rgba(255,255,255,0)"/></radialGradient></defs><circle cx="100" cy="100" r="50" fill="url(%23grad)"/><circle cx="800" cy="200" r="30" fill="url(%23grad)"/><circle cx="300" cy="800" r="40" fill="url(%23grad)"/><circle cx="900" cy="700" r="60" fill="url(%23grad)"/></svg>') no-repeat;
+      background-size: cover;
+      opacity: 0.3;
+      z-index: 0;
+    }
+    
+    .converter-container {
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.1),
+        0 1px 2px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: slideUp 0.8s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .subtitle {
+      font-size: 16px;
+      color: #64748b;
+      font-weight: 400;
+    }
+    
+    .input-group {
+      margin-bottom: 24px;
+      position: relative;
+    }
+    
+    .input-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+    
+    .amount-input {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #1f2937;
+      background: #ffffff;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    
+    .amount-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .currency-selector {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    
+    .currency-select {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1f2937;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 20px center;
+      background-size: 20px;
+      padding-right: 50px;
+    }
+    
+    .currency-select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .swap-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      cursor: pointer;
+      margin: 16px auto;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .swap-button:hover {
+      transform: rotate(180deg) scale(1.1);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .swap-button svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+    
+    .convert-button {
+      width: 100%;
+      padding: 18px 24px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      margin-bottom: 24px;
+    }
+    
+    .convert-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+    
+    .convert-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .result-card {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+    
+    .result-amount {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .result-text {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    
+    .loading-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #e5e7eb;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      color: #64748b;
+      font-size: 14px;
+    }
+    
+    @media (max-width: 480px) {
+      .converter-container {
+        padding: 24px;
+        margin: 0 16px;
+      }
+      
+      .title {
+        font-size: 24px;
+      }
+      
+      .amount-input {
+        font-size: 16px;
+      }
+      
+      .result-amount {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="converter-container">
+    <div class="header">
+      <h1 class="title">💱 Currency Converter</h1>
+      <p class="subtitle">Real-time exchange rates</p>
+    </div>
+    
+    <div class="input-group">
+      <label for="amount" class="input-label">Amount</label>
+      <input type="number" id="amount" class="amount-input" placeholder="Enter amount to convert" step="0.01" min="0">
+    </div>
+    
+    <div class="currency-selector">
+      <label for="fromCurrency" class="input-label">From</label>
+      <select id="fromCurrency" class="currency-select"></select>
+    </div>
+    
+    <button class="swap-button" onclick="swapCurrencies()" title="Swap currencies">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+      </svg>
+    </button>
+    
+    <div class="currency-selector">
+      <label for="toCurrency" class="input-label">To</label>
+      <select id="toCurrency" class="currency-select"></select>
+    </div>
+    
+    <button class="convert-button" onclick="convertCurrency()" id="convertBtn">
+      Convert Currency
+    </button>
+    
+    <div class="result-card" id="result">
+      <div style="color: #64748b; font-size: 16px;">Enter amount to see conversion</div>
+    </div>
+    
+    <div class="footer">
+      <p>Exchange rates updated: August 2025</p>
+    </div>
+  </div>
+
+  <script>
+    // Updated exchange rates based on current data (August 2025)
+    const rates = {
+      "USD": 1,
+      "EUR": 0.8581,
+      "GBP": 0.7648,
+      "JPY": 147.16,
+      "AUD": 1.5234,
+      "CAD": 1.3612,
+      "CHF": 0.8756,
+      "CNY": 7.2145,
+      "SEK": 10.4823,
+      "NZD": 1.6742,
+      "MXN": 17.25,
+      "SGD": 1.3421,
+      "HKD": 7.8125,
+      "NOK": 10.7654,
+      "KRW": 1332.50,
+      "TRY": 27.85,
+      "INR": 83.75,
+      "RUB": 92.45,
+      "ZAR": 18.67,
+      "BRL": 5.12,
+      "ARS": 365.25,
+      "CLP": 925.80,
+      "COP": 4025.50,
+      "PEN": 3.75,
+      "DZD": 134.25,
+      "EGP": 48.95,
+      "MAD": 9.85,
+      "TND": 3.08,
+      "LYD": 4.85,
+      "KES": 145.75,
+      "NGN": 775.50,
+      "GHS": 12.85,
+      "UGX": 3725.00,
+      "TZS": 2485.00,
+      "ETB": 57.25,
+      "MWK": 825.50,
+      "MUR": 45.25,
+      "SCR": 13.75,
+      "BND": 1.3421,
+      "FJD": 2.235,
+      "PGK": 3.72,
+      "BWP": 13.42,
+      "LSL": 18.67,
+      "SZL": 18.67,
+      "NAD": 18.67,
+      "MZN": 63.75,
+      "NPR": 132.50,
+      "PKR": 278.25,
+      "LKR": 315.75,
+      "BDT": 108.50,
+      "VND": 24125.00,
+      "IDR": 15425.00,
+      "MYR": 4.625,
+      "THB": 35.25,
+      "PHP": 55.85,
+      "ILS": 3.685,
+      "JOD": 0.709,
+      "KWD": 0.3065,
+      "BHD": 0.376,
+      "QAR": 3.64,
+      "AED": 3.6725,
+      "SAR": 3.75,
+      "OMR": 0.3845,
+      "UAH": 41.25,
+      "PLN": 4.185,
+      "HUF": 358.75,
+      "CZK": 22.65,
+      "ISK": 139.50,
+      "DKK": 6.795,
+      "BGN": 1.677,
+      "HRK": 6.795,
+      "RON": 4.215,
+      "MDL": 17.85,
+      "MKD": 52.85,
+      "ALL": 92.75,
+      "KGS": 89.25,
+      "TJS": 10.95,
+      "UZS": 12750.00,
+      "KZT": 485.75,
+      "AZN": 1.70,
+      "AMD": 387.50,
+      "GEL": 2.685
+    };
+
+    const currencies = {
+      "USD": "🇺🇸 US Dollar",
+      "EUR": "🇪🇺 Euro",
+      "GBP": "🇬🇧 British Pound",
+      "JPY": "🇯🇵 Japanese Yen",
+      "AUD": "🇦🇺 Australian Dollar",
+      "CAD": "🇨🇦 Canadian Dollar",
+      "CHF": "🇨🇭 Swiss Franc",
+      "CNY": "🇨🇳 Chinese Yuan",
+      "SEK": "🇸🇪 Swedish Krona",
+      "NZD": "🇳🇿 New Zealand Dollar",
+      "MXN": "🇲🇽 Mexican Peso",
+      "SGD": "🇸🇬 Singapore Dollar",
+      "HKD": "🇭🇰 Hong Kong Dollar",
+      "NOK": "🇳🇴 Norwegian Krone",
+      "KRW": "🇰🇷 South Korean Won",
+      "TRY": "🇹🇷 Turkish Lira",
+      "INR": "🇮🇳 Indian Rupee",
+      "RUB": "🇷🇺 Russian Ruble",
+      "ZAR": "🇿🇦 South African Rand",
+      "BRL": "🇧🇷 Brazilian Real",
+      "ARS": "🇦🇷 Argentine Peso",
+      "CLP": "🇨🇱 Chilean Peso",
+      "COP": "🇨🇴 Colombian Peso",
+      "PEN": "🇵🇪 Peruvian Sol",
+      "DZD": "🇩🇿 Algerian Dinar",
+      "EGP": "🇪🇬 Egyptian Pound",
+      "MAD": "🇲🇦 Moroccan Dirham",
+      "TND": "🇹🇳 Tunisian Dinar",
+      "LYD": "🇱🇾 Libyan Dinar",
+      "KES": "🇰🇪 Kenyan Shilling",
+      "NGN": "🇳🇬 Nigerian Naira",
+      "GHS": "🇬🇭 Ghanaian Cedi",
+      "UGX": "🇺🇬 Ugandan Shilling",
+      "TZS": "🇹🇿 Tanzanian Shilling",
+      "ETB": "🇪🇹 Ethiopian Birr",
+      "MWK": "🇲🇼 Malawian Kwacha",
+      "MUR": "🇲🇺 Mauritian Rupee",
+      "SCR": "🇸🇨 Seychellois Rupee",
+      "BND": "🇧🇳 Brunei Dollar",
+      "FJD": "🇫🇯 Fijian Dollar",
+      "PGK": "🇵🇬 Papua New Guinean Kina",
+      "BWP": "🇧🇼 Botswanan Pula",
+      "LSL": "🇱🇸 Lesotho Loti",
+      "SZL": "🇸🇿 Swazi Lilangeni",
+      "NAD": "🇳🇦 Namibian Dollar",
+      "MZN": "🇲🇿 Mozambican Metical",
+      "NPR": "🇳🇵 Nepalese Rupee",
+      "PKR": "🇵🇰 Pakistani Rupee",
+      "LKR": "🇱🇰 Sri Lankan Rupee",
+      "BDT": "🇧🇩 Bangladeshi Taka",
+      "VND": "🇻🇳 Vietnamese Dong",
+      "IDR": "🇮🇩 Indonesian Rupiah",
+      "MYR": "🇲🇾 Malaysian Ringgit",
+      "THB": "🇹🇭 Thai Baht",
+      "PHP": "🇵🇭 Philippine Peso",
+      "ILS": "🇮🇱 Israeli Shekel",
+      "JOD": "🇯🇴 Jordanian Dinar",
+      "KWD": "🇰🇼 Kuwaiti Dinar",
+      "BHD": "🇧🇭 Bahraini Dinar",
+      "QAR": "🇶🇦 Qatari Riyal",
+      "AED": "🇦🇪 UAE Dirham",
+      "SAR": "🇸🇦 Saudi Riyal",
+      "OMR": "🇴🇲 Omani Rial",
+      "UAH": "🇺🇦 Ukrainian Hryvnia",
+      "PLN": "🇵🇱 Polish Zloty",
+      "HUF": "🇭🇺 Hungarian Forint",
+      "CZK": "🇨🇿 Czech Koruna",
+      "ISK": "🇮🇸 Icelandic Krona",
+      "DKK": "🇩🇰 Danish Krone",
+      "BGN": "🇧🇬 Bulgarian Lev",
+      "HRK": "🇭🇷 Croatian Kuna",
+      "RON": "🇷🇴 Romanian Leu",
+      "MDL": "🇲🇩 Moldovan Leu",
+      "MKD": "🇲🇰 Macedonian Denar",
+      "ALL": "🇦🇱 Albanian Lek",
+      "KGS": "🇰🇬 Kyrgyzstani Som",
+      "TJS": "🇹🇯 Tajikistani Somoni",
+      "UZS": "🇺🇿 Uzbekistani Som",
+      "KZT": "🇰🇿 Kazakhstani Tenge",
+      "AZN": "🇦🇿 Azerbaijani Manat",
+      "AMD": "🇦🇲 Armenian Dram",
+      "GEL": "🇬🇪 Georgian Lari"
+    };
+
+    const fromCurrency = document.getElementById("fromCurrency");
+    const toCurrency = document.getElementById("toCurrency");
+    const resultDiv = document.getElementById("result");
+    const amountInput = document.getElementById("amount");
+    const convertBtn = document.getElementById("convertBtn");
+
+    // Populate currency dropdowns
+    function populateCurrencies() {
+      for (let currency in currencies) {
+        let option1 = document.createElement("option");
+        option1.value = currency;
+        option1.text = currencies[currency];
+        fromCurrency.appendChild(option1);
+
+        let option2 = document.createElement("option");
+        option2.value = currency;
+        option2.text = currencies[currency];
+        toCurrency.appendChild(option2);
+      }
+      
+      fromCurrency.value = "USD";
+      toCurrency.value = "INR";
+    }
+
+    function swapCurrencies() {
+      const temp = fromCurrency.value;
+      fromCurrency.value = toCurrency.value;
+      toCurrency.value = temp;
+      
+      if (amountInput.value) {
+        convertCurrency();
+      }
+    }
+
+    function convertCurrency() {
+      const amount = parseFloat(amountInput.value);
+      const from = fromCurrency.value;
+      const to = toCurrency.value;
+
+      if (!amount || amount <= 0) {
+        resultDiv.innerHTML = '<div style="color: #ef4444; font-size: 16px;">⚠️ Please enter a valid amount</div>';
+        return;
+      }
+
+      // Show loading
+      convertBtn.disabled = true;
+      resultDiv.innerHTML = '<div class="loading-spinner"></div>';
+
+      // Simulate API delay for better UX
+      setTimeout(() => {
+        const usdAmount = amount / rates[from];
+        const converted = usdAmount * rates[to];
+        
+        resultDiv.innerHTML = `
+          <div class="result-amount">${formatNumber(converted)} ${to}</div>
+          <div class="result-text">${formatNumber(amount)} ${from} equals</div>
+        `;
+        
+        convertBtn.disabled = false;
+      }, 500);
+    }
+
+    function formatNumber(num) {
+      if (num >= 1000000) {
+        return (num / 1000000).toFixed(2) + 'M';
+      } else if (num >= 1000) {
+        return (num / 1000).toFixed(2) + 'K';
+      } else if (num < 0.01) {
+        return num.toExponential(2);
+      } else {
+        return num.toFixed(2);
+      }
+    }
+
+    // Event listeners
+    amountInput.addEventListener('input', function() {
+      if (this.value) {
+        convertCurrency();
+      }
+    });
+
+    fromCurrency.addEventListener('change', function() {
+      if (amountInput.value) {
+        convertCurrency();
+      }
+    });
+
+    toCurrency.addEventListener('change', function() {
+      if (amountInput.value) {
+        convertCurrency();
+      }
+    });
+
+    amountInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        convertCurrency();
+      }
+    });
+
+    // Initialize
+    populateCurrencies();
+  </script>
+</body>
+</html>
